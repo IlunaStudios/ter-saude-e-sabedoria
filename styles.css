@@ -1,0 +1,1004 @@
+/* ================================================
+   TODAS AS ESTILIZAÇÕES DO SITE
+   Arquivo separado para organização
+   ================================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* CORES PRINCIPAIS - Mude aqui se quiser mudar o site todo */
+:root {
+  --verde-floresta: #1b4d3e;
+  --verde-medio: #2d5f4c;
+  --verde-claro: #4a7c5c;
+  --verde-suave: #e8f3ed;
+
+  --dourado: #c9a227;
+  --dourado-claro: #e0b745;
+  --dourado-escuro: #a68520;
+
+  --vermelho-oferta: #dc2626;
+  --laranja-oferta: #ff9f00;
+  --preto: #1a1a1a;
+  --cinza-texto: #666666;
+  --cinza-claro: #999999;
+  --branco: #ffffff;
+  /* Creme levemente quente: menos "frio" que #fafafa; comum em lojas sem escurecer a página */
+  --fundo: #f7f4ef;
+}
+
+body {
+  font-family: "Inter", Arial, sans-serif;
+  background: var(--fundo);
+  color: var(--preto);
+  overflow-x: hidden;
+}
+
+/* ============================================
+   HEADER / BARRA SUPERIOR
+   Simples, direto, como SHEIN
+   ============================================ */
+/* Barra inteira colorida (gradiente + faixa dourada embaixo) */
+.header {
+  background: linear-gradient(
+    125deg,
+    #d4e9dd 0%,
+    var(--verde-suave) 32%,
+    #eef6f1 55%,
+    var(--verde-suave) 100%
+  );
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 3px solid var(--dourado);
+  box-shadow: 0 4px 16px rgba(27, 77, 62, 0.12);
+}
+
+.header-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.logo-emoji {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.logo-texto h1 {
+  font-size: clamp(16px, 3.2vw, 22px);
+  font-weight: 800;
+  color: var(--verde-floresta);
+  line-height: 1.15;
+  margin: 0;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.header-redes-zone {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.header-canal-handle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--verde-medio);
+  white-space: nowrap;
+}
+
+.header-redes {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-rede-link {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(27, 77, 62, 0.15);
+  box-shadow: 0 2px 6px rgba(27, 77, 62, 0.08);
+  text-decoration: none;
+  font-size: 17px;
+  line-height: 1;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.15s,
+    box-shadow 0.2s;
+}
+
+.header-rede-link:hover {
+  background: var(--branco);
+  border-color: var(--verde-floresta);
+  box-shadow: 0 3px 10px rgba(27, 77, 62, 0.15);
+  transform: scale(1.06);
+}
+
+.header-rede-link svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+}
+
+/* MENU DE CATEGORIAS (faixa abaixo do header) */
+.menu-categorias-header {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  padding-bottom: 0;
+}
+
+.menu-item {
+  background: var(--fundo);
+  border: none;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  border-radius: 6px;
+  transition: all 0.2s;
+  color: var(--cinza-texto);
+  font-family: "Inter", sans-serif;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.menu-item:hover {
+  background: var(--verde-suave);
+  color: var(--verde-floresta);
+}
+
+.menu-item.ativo {
+  background: var(--verde-floresta);
+  color: white;
+}
+
+/* WhatsApp no header: desligado (sem CSS nem link ativo). */
+
+/* ============================================
+   BARRINHA DE BUSCA SIMPLES
+   ============================================ */
+.busca-barra {
+  background: white;
+  padding: 12px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.busca-container {
+  max-width: 100%;
+  display: flex;
+  gap: 10px;
+}
+
+.select-busca {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+  background: white;
+  cursor: pointer;
+  outline: none;
+  font-family: "Inter", sans-serif;
+  min-width: 120px;
+}
+
+.input-busca {
+  flex: 1;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  font-family: "Inter", sans-serif;
+}
+
+.input-busca:focus {
+  border-color: var(--verde-floresta);
+}
+
+.btn-busca {
+  background: var(--verde-floresta);
+  color: white;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* ============================================
+   BARRINHA DE DESTAQUES PEQUENO
+   3-4 linhas apenas, sem ocupando tela
+   ============================================ */
+.barrinha-destaques {
+  background: var(--fundo);
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.destaque-lista {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  padding: 0 20px;
+}
+
+.item-destaque {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--cinza-texto);
+}
+
+.item-destaque .icone {
+  font-size: 18px;
+}
+
+.item-destaque .titulo {
+  font-weight: 700;
+  color: var(--verde-floresta);
+  display: block;
+}
+
+.item-destaque .desc {
+  font-size: 11px;
+}
+
+/* ============================================
+   FAIXA SOBRE A GRADE — mesmo menu de categorias (ícones)
+   ============================================ */
+.filtros-topo {
+  background: white;
+  padding: 12px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.filtros-linha {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.filtros-linha-menu {
+  align-items: center;
+  gap: 12px;
+}
+
+.filtros-linha-menu .menu-categorias-header {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+/* ============================================
+   GRADE DE PRODUTOS - O CORAÇÃO DO SITE!
+   Estilo SHEIN - cards compactos e muitos produtos por linha
+   ============================================ */
+.grade-produtos-principal {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.produtos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.card-produto {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid #eee;
+  position: relative;
+  cursor: pointer;
+}
+
+.card-produto:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  border-color: var(--verde-floresta);
+}
+
+/* TAG DE DESCONTO NO CARD */
+.tag-off {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: var(--vermelho-oferta);
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  z-index: 2;
+}
+
+.tag-novo {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: var(--dourado);
+  color: var(--preto);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  z-index: 2;
+}
+
+/* BOTAO FAVORITAR */
+.card-fav {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: white;
+  border: 1px solid #eee;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 2;
+  transition: all 0.2s;
+}
+
+.card-fav:hover {
+  transform: scale(1.2);
+  background: #fff0f0;
+}
+
+/* IMAGEM DO PRODUTO */
+.card-img-area {
+  height: 200px;
+  overflow: hidden;
+  background: #f5f5f5;
+  position: relative;
+}
+
+.card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s;
+}
+
+.card-produto:hover .card-img {
+  transform: scale(1.08);
+}
+
+/* BARRA DE VENDIDO */
+.barra-vendido-area {
+  padding: 8px 12px 0;
+}
+
+.barra-progresso-pequena {
+  height: 4px;
+  background: #eee;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.barra-progresso-cheia {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--vermelho-oferta),
+    var(--laranja-oferta)
+  );
+  border-radius: 2px;
+}
+
+.texto-vendido {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--vermelho-oferta);
+  display: block;
+  margin-top: 3px;
+}
+
+/* INFORMAÇÕES DO PRODUTO */
+.card-info {
+  padding: 12px;
+}
+
+.marca-label {
+  font-size: 10px;
+  color: var(--dourado);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.nome-produto {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--preto);
+  margin-bottom: 6px;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.avaliacao {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 6px;
+}
+
+.estrelas-card {
+  color: #ffb400;
+  font-size: 11px;
+}
+
+.qtd-avis {
+  font-size: 10px;
+  color: var(--cinza-claro);
+}
+
+.preco-container {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.preco-antigo {
+  font-size: 11px;
+  color: var(--cinza-claro);
+  text-decoration: line-through;
+}
+
+.preco-atual {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--vermelho-oferta);
+}
+
+.parcelamento {
+  font-size: 10px;
+  color: var(--verde-medio);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.frete-tag {
+  font-size: 10px;
+  color: var(--verde-medio);
+  font-weight: 700;
+  background: #e8f5e9;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+/* BOTÃO COMPRAR DO CARD */
+.btn-comprar-card {
+  display: block;
+  background: linear-gradient(
+    135deg,
+    var(--verde-floresta),
+    var(--verde-medio)
+  );
+  color: white;
+  text-decoration: none;
+  text-align: center;
+  padding: 10px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.btn-comprar-card:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(27, 77, 62, 0.4);
+}
+
+.platforma-mini {
+  font-size: 9px;
+  color: var(--cinza-claro);
+  text-align: center;
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+/* ============================================
+   SEÇÃO CURSOS/LIVROS DIGITAIS
+   Compacta também
+   ============================================ */
+.secao-digitais {
+  background: linear-gradient(180deg, #e8f2ec 0%, var(--fundo) 48px);
+  margin: 30px 0 0;
+  border-top: 4px solid var(--verde-floresta);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.titulo-digitais {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid #eee;
+  background: var(--branco);
+}
+
+.titulo-digitais h2 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--verde-floresta);
+}
+
+.badge-plataforma-digitais {
+  font-size: 10px;
+  background: var(--fundo);
+  padding: 4px 10px;
+  border-radius: 4px;
+  color: var(--cinza-texto);
+  font-weight: 700;
+}
+
+.filtros-plataformas {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 12px 20px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  background: var(--branco);
+  border-bottom: 1px solid #eee;
+}
+
+.plat-btn {
+  background: var(--fundo);
+  border: 1px solid #ddd;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--cinza-texto);
+}
+
+.plat-btn:hover {
+  border-color: var(--dourado);
+  color: var(--dourado);
+}
+
+.plat-btn.ativo {
+  background: var(--dourado);
+  color: var(--preto);
+  border-color: var(--dourado);
+}
+
+/* Mesmos filtros "Cursos & Livros" abaixo do menu de categorias — só celular */
+.digitais-atalho-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .digitais-atalho-mobile {
+    display: block;
+    background: var(--branco);
+    border-bottom: 1px solid #eee;
+  }
+
+  .digitais-atalho-mobile .titulo-digitais {
+    padding-top: 12px;
+    padding-bottom: 8px;
+  }
+
+  .digitais-atalho-mobile .filtros-plataformas {
+    padding-top: 0;
+    padding-bottom: 14px;
+  }
+
+  /* Evita repetir título + botões quando a seção desce na página */
+  .secao-digitais .titulo-digitais,
+  .secao-digitais .filtros-plataformas {
+    display: none;
+  }
+}
+
+/* Só no celular: título da seção some; este rótulo separa a galeria dos produtos físicos */
+.digitais-catalogo-label {
+  display: none;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 14px 20px 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--verde-floresta);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.digitais-catalogo-label span {
+  display: inline-block;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--dourado);
+}
+
+.grande-digitais {
+  max-width: 1400px;
+  margin: 10px auto 0;
+  padding: 16px 20px 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+  background: var(--branco);
+  border: 1px solid rgba(27, 77, 62, 0.14);
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(27, 77, 62, 0.06);
+}
+
+.card-digital {
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s;
+  position: relative;
+  cursor: pointer;
+}
+
+.card-digital:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  border-color: var(--dourado);
+}
+
+.badge-platforma-card {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  z-index: 2;
+  color: white;
+}
+
+.bg-kiwify {
+  background: #eb3b5a;
+}
+.bg-amazon {
+  background: #ff9900;
+  color: black;
+}
+.bg-google {
+  background: #4285f4;
+}
+.bg-kobo {
+  background: #e94560;
+}
+.bg-hotmart {
+  background: #8b2635;
+}
+
+.img-digital {
+  height: 180px;
+  background: var(--fundo);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.img-digital span {
+  font-size: 50px;
+}
+
+.info-digital {
+  padding: 12px;
+}
+
+.titulo-digital {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--verde-floresta);
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.autor-digital {
+  font-size: 10px;
+  color: var(--cinza-texto);
+  margin-bottom: 6px;
+}
+
+.preco-digital {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--dourado);
+  margin-bottom: 8px;
+}
+
+.botoes-digital {
+  display: flex;
+  gap: 5px;
+}
+
+.btn-plat {
+  flex: 1;
+  text-align: center;
+  padding: 8px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  text-decoration: none;
+}
+
+.btn-plat.kiwi {
+  background: #eb3b5a;
+}
+.btn-plat.amz {
+  background: #ff9900;
+  color: black;
+}
+.btn-plat.ggl {
+  background: #4285f4;
+}
+.btn-plat.kob {
+  background: #e94560;
+}
+.btn-plat.hot {
+  background: #8b2635;
+}
+
+/* ============================================
+   RODAPÉ SIMPLES
+   ============================================ */
+.footer {
+  background: var(--verde-floresta);
+  color: white;
+  padding: 30px 20px;
+  margin-top: 30px;
+}
+
+.footer-conteudo {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+}
+
+.footer-col h4 {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  color: var(--dourado);
+}
+
+.footer-col p,
+.footer-col a {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  display: block;
+  margin-bottom: 6px;
+  text-decoration: none;
+}
+
+.footer-col a:hover {
+  color: var(--dourado);
+}
+
+.social-links {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.social-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.social-btn:hover {
+  background: var(--dourado);
+  color: var(--verde-floresta);
+}
+
+.footer-final {
+  max-width: 1400px;
+  margin: 20px auto 0;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Botão WhatsApp flutuante: desligado (sem @keyframes pulsar). */
+
+/* ============================================
+   RESPONSIVIDADE - CELULAR
+   ============================================ */
+@media (max-width: 768px) {
+  .header {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .header-marca {
+    flex: 1 1 auto;
+    min-width: min(100%, 200px);
+  }
+
+  .header-redes-zone {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+  }
+
+  .busca-container {
+    flex-direction: column;
+  }
+
+  .select-busca {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .filtros-linha {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filtros-linha-menu {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* Menu de categorias em 2 linhas (sem rolagem horizontal) */
+  .menu-categorias-header {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    overflow-x: visible;
+    width: 100%;
+  }
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    text-align: center;
+    padding: 8px 4px;
+    font-size: 11px;
+    line-height: 1.2;
+    justify-self: stretch;
+    min-width: 0;
+  }
+
+  .produtos-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .grande-digitais {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    padding: 12px 14px 20px;
+    margin-left: 12px;
+    margin-right: 12px;
+  }
+
+  .digitais-catalogo-label {
+    display: block;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .img-digital {
+    height: 130px;
+  }
+
+  .img-digital span {
+    font-size: 36px;
+  }
+
+  .info-digital {
+    padding: 10px;
+  }
+
+  .titulo-digital {
+    font-size: 12px;
+  }
+
+  .preco-digital {
+    font-size: 15px;
+  }
+
+  .btn-plat {
+    padding: 7px 4px;
+    font-size: 9px;
+  }
+
+  .destaque-lista {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .footer-conteudo {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .produtos-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grande-digitais {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 10px 10px 18px;
+    margin-left: 8px;
+    margin-right: 8px;
+  }
+
+  .destaque-lista {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-conteudo {
+    grid-template-columns: 1fr;
+  }
+}
