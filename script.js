@@ -114,25 +114,29 @@ const PLATFORM_INFO = {
 // Função para testar conectividade da planilha
 async function testSheetConnectivity() {
   debugLog("🧪 Testando conectividade da planilha...");
-  
+
   const testUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/pub?output=csv&gid=${PLATFORMS.vitrine.gid}`;
   debugLog(`🔗 URL de teste: ${testUrl}`);
-  
+
   try {
     const response = await fetch(testUrl);
-    debugLog(`📊 Status da resposta: ${response.status} ${response.statusText}`);
-    
+    debugLog(
+      `📊 Status da resposta: ${response.status} ${response.statusText}`,
+    );
+
     if (response.ok) {
       const text = await response.text();
       debugLog(`✅ Planilha acessível! ${text.length} bytes recebidos`);
       if (text.length > 0) {
-        const firstLine = text.split('\n')[0];
+        const firstLine = text.split("\n")[0];
         debugLog(`📄 Primeira linha: "${firstLine.substring(0, 100)}..."`);
       }
     } else {
       debugLog(`❌ Planilha não acessível: ${response.status}`);
       if (response.status === 404) {
-        debugLog(`💡 Possíveis causas: planilha não publicada, ID incorreto, aba não existe`);
+        debugLog(
+          `💡 Possíveis causas: planilha não publicada, ID incorreto, aba não existe`,
+        );
       }
     }
   } catch (error) {
@@ -160,6 +164,9 @@ async function loadProductsFromSheet() {
 
   // Verificar se os botões de plataforma estão presentes
   checkPlatformButtons();
+  
+  // Testar conectividade da planilha primeiro
+  await testSheetConnectivity();
 
   showLoading();
   try {
@@ -199,18 +206,14 @@ async function fetchSheetData() {
     debugLog(`🔗 URL tentativa 1: ${url}`);
     let response = await fetch(url);
     if (!response.ok) {
-      debugLog(
-        `⚠️ pub CSV falhou (${response.status}: ${response.statusText}). Tentando gviz...`,
-      );
+      debugLog(`⚠️ pub CSV falhou (${response.status}: ${response.statusText}). Tentando gviz...`);
       url = buildAlternateSheetUrl(platformKey);
       debugLog(`🔗 URL tentativa 2: ${url}`);
       response = await fetch(url);
     }
 
     if (!response.ok) {
-      debugLog(
-        `❌ Ambas URLs falharam. Status: ${response.status} ${response.statusText}`,
-      );
+      debugLog(`❌ Ambas URLs falharam. Status: ${response.status} ${response.statusText}`);
       throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`);
     }
 
