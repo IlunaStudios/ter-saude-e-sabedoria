@@ -141,6 +141,41 @@ async function testSheetConnectivity() {
         debugLog(`   6. Recarregar a página do site`);
       } else if (response.status === 404) {
         debugLog(`💡 Possíveis causas: planilha não publicada, ID incorreto, aba não existe`);
+      }
+    }
+  } catch (error) {
+    debugLog(`❌ Erro de conectividade: ${error.message}`);
+  }
+}
+
+// Função para verificar se a planilha está compartilhada publicamente
+async function checkSheetSharing() {
+  debugLog("🔐 Testando compartilhamento público...");
+  
+  // Tentar URL alternativa que pode funcionar sem publicação completa
+  const altUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${PLATFORMS.vitrine.gid}`;
+  debugLog(`🔗 URL alternativa: ${altUrl}`);
+  
+  try {
+    const response = await fetch(altUrl);
+    debugLog(`📊 Status alternativo: ${response.status} ${response.statusText}`);
+    
+    if (response.ok) {
+      const text = await response.text();
+      debugLog(`✅ URL alternativa funcionou! ${text.length} bytes`);
+      debugLog(`💡 Esta URL pode funcionar sem publicar na web`);
+      return altUrl;
+    } else {
+      debugLog(`❌ URL alternativa também falhou`);
+      return null;
+    }
+  } catch (error) {
+    debugLog(`❌ Erro na URL alternativa: ${error.message}`);
+    return null;
+  }
+}
+
+window.addEventListener("DOMContentLoaded", () => {
   loadProductsFromSheet();
 });
 
