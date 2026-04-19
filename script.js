@@ -133,10 +133,15 @@ async function testSheetConnectivity() {
       }
     } else {
       debugLog(`❌ Planilha não acessível: ${response.status}`);
-      if (response.status === 404) {
-        debugLog(
-          `💡 Possíveis causas: planilha não publicada, ID incorreto, aba não existe`,
-        );
+      if (response.status === 401) {
+        debugLog(`🚫 PLANILHA NÃO PUBLICADA! Você precisa:`);
+        debugLog(`   1. Abrir a planilha no Google Sheets`);
+        debugLog(`   2. Ir em Arquivo > Compartilhar > Publicar na web`);
+        debugLog(`   3. Selecionar a aba "VitrineSite"`);
+        debugLog(`   4. Escolher formato CSV`);
+        debugLog(`   5. Clicar em "Publicar"`);
+      } else if (response.status === 404) {
+        debugLog(`💡 Possíveis causas: planilha não publicada, ID incorreto, aba não existe`);
       }
     }
   } catch (error) {
@@ -164,7 +169,7 @@ async function loadProductsFromSheet() {
 
   // Verificar se os botões de plataforma estão presentes
   checkPlatformButtons();
-  
+
   // Testar conectividade da planilha primeiro
   await testSheetConnectivity();
 
@@ -206,14 +211,18 @@ async function fetchSheetData() {
     debugLog(`🔗 URL tentativa 1: ${url}`);
     let response = await fetch(url);
     if (!response.ok) {
-      debugLog(`⚠️ pub CSV falhou (${response.status}: ${response.statusText}). Tentando gviz...`);
+      debugLog(
+        `⚠️ pub CSV falhou (${response.status}: ${response.statusText}). Tentando gviz...`,
+      );
       url = buildAlternateSheetUrl(platformKey);
       debugLog(`🔗 URL tentativa 2: ${url}`);
       response = await fetch(url);
     }
 
     if (!response.ok) {
-      debugLog(`❌ Ambas URLs falharam. Status: ${response.status} ${response.statusText}`);
+      debugLog(
+        `❌ Ambas URLs falharam. Status: ${response.status} ${response.statusText}`,
+      );
       throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`);
     }
 
