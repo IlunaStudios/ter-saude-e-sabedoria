@@ -24,6 +24,12 @@ function buildAlternateSheetUrl(platformKey) {
   return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${plat.gid}`;
 }
 
+function buildExportSheetUrl(platformKey) {
+  const plat = PLATFORMS[platformKey];
+  if (!plat) return null;
+  return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${plat.gid}`;
+}
+
 const PRODUCT_GRID = document.getElementById("grade-principal");
 const PRODUCT_LOADING = document.getElementById("produtos-carregando");
 const CATEGORY_MENU = document.getElementById("categoria-menu");
@@ -120,8 +126,10 @@ async function testSheetConnectivity() {
 
   try {
     const response = await fetch(testUrl);
-    debugLog(`📊 Status da resposta: ${response.status} ${response.statusText}`);
-    
+    debugLog(
+      `📊 Status da resposta: ${response.status} ${response.statusText}`,
+    );
+
     if (response.ok) {
       const text = await response.text();
       debugLog(`✅ Planilha acessível! ${text.length} bytes recebidos`);
@@ -133,14 +141,35 @@ async function testSheetConnectivity() {
       debugLog(`❌ Planilha não acessível: ${response.status}`);
       if (response.status === 401) {
         debugLog(`🚫 PLANILHA NÃO PUBLICADA! Você precisa:`);
-        debugLog(`   1. Abrir: https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?gid=${PLATFORMS.vitrine.gid}`);
+        debugLog(
+          `   1. Abrir: https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?gid=${PLATFORMS.vitrine.gid}`,
+        );
         debugLog(`   2. Arquivo > Compartilhar > Publicar na web`);
         debugLog(`   3. Aba: "VitrineSite"`);
         debugLog(`   4. Formato: "Vírgula Separada (.csv)"`);
         debugLog(`   5. Clicar em "Publicar"`);
         debugLog(`   6. Recarregar a página do site`);
       } else if (response.status === 404) {
-        debugLog(`💡 Possíveis causas: planilha não publicada, ID incorreto, aba não existe`);
+        debugLog(
+          `💡 Possíveis causas: planilha não publicada, ID incorreto, aba não existe`,
+        );
+      }
+
+      const exportUrl = buildExportSheetUrl("vitrine");
+      if (exportUrl) {
+        debugLog(`🔁 Testando URL alternativa de exportação: ${exportUrl}`);
+        try {
+          const exportResponse = await fetch(exportUrl);
+          debugLog(
+            `📊 Status export: ${exportResponse.status} ${exportResponse.statusText}`,
+          );
+          if (exportResponse.ok) {
+            const exportText = await exportResponse.text();
+            debugLog(`✅ Export URL funcionou! ${exportText.length} bytes recebidos`);
+          }
+        } catch (exportError) {
+          debugLog(`❌ Erro export URL: ${exportError.message}`);
+        }
       }
     }
   } catch (error) {
@@ -151,15 +180,17 @@ async function testSheetConnectivity() {
 // Função para verificar se a planilha está compartilhada publicamente
 async function checkSheetSharing() {
   debugLog("🔐 Testando compartilhamento público...");
-  
+
   // Tentar URL alternativa que pode funcionar sem publicação completa
   const altUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${PLATFORMS.vitrine.gid}`;
   debugLog(`🔗 URL alternativa: ${altUrl}`);
-  
+
   try {
     const response = await fetch(altUrl);
-    debugLog(`📊 Status alternativo: ${response.status} ${response.statusText}`);
-    
+    debugLog(
+      `📊 Status alternativo: ${response.status} ${response.statusText}`,
+    );
+
     if (response.ok) {
       const text = await response.text();
       debugLog(`✅ URL alternativa funcionou! ${text.length} bytes`);
@@ -247,7 +278,16 @@ async function fetchSheetData() {
 
     if (!response.ok) {
       debugLog(
-        `❌ Ambas URLs falharam. Status: ${response.status} ${response.statusText}`,
+        `⚠️ gviz CSV falhou (${response.status}: ${response.statusText}). Tentando export...`,
+      );
+      url = buildExportSheetUrl(platformKey);
+      debugLog(`🔗 URL tentativa 3: ${url}`);
+      response = await fetch(url);
+    }
+
+    if (!response.ok) {
+      debugLog(
+        `❌ Todas as URLs falharam. Status: ${response.status} ${response.statusText}`,
       );
       throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`);
     }
@@ -390,32 +430,6 @@ function dedupeProducts(products) {
     }
   });
   return Array.from(deduped.values());
-}
-
-function parseCsvLine(line) {
-  const values = [];
-  let current = "";
-  let quoted = false;
-
-  for (let i = 0; i < line.length; i += 1) {
-    const char = line[i];
-    if (char === '"') {
-      if (quoted && line[i + 1] === '"') {
-        current += '"';
-        i += 1;
-      } else {
-        quoted = !quoted;
-      }
-    } else if (char === "," && !quoted) {
-      values.push(current);
-      current = "";
-    } else {
-      current += char;
-    }
-  }
-
-  values.push(current);
-  return values;
 }
 
 function normalizeProductRow(row, platformKey) {
