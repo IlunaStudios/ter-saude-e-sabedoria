@@ -37,6 +37,11 @@ body {
   overflow-x: hidden;
 }
 
+/* Mensagem de carregamento — controlada pelo JavaScript */
+#produtos-carregando {
+  display: none;
+}
+
 /* ============================================
    HEADER / BARRA SUPERIOR
    Simples, direto, como SHEIN
@@ -172,6 +177,18 @@ body {
 .menu-item.ativo {
   background: var(--verde-floresta);
   color: white;
+}
+
+/* BOTÕES DE PLATAFORMA - sempre visíveis */
+.filtro-plataforma {
+  display: inline-flex !important;
+  visibility: visible !important;
+}
+
+.separador-plataformas {
+  display: inline !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 /* WhatsApp no header: desligado (sem CSS nem link ativo). */
@@ -926,6 +943,20 @@ body {
     line-height: 1.2;
     justify-self: stretch;
     min-width: 0;
+  }
+
+  /* Garantir que botões de plataforma apareçam em celular */
+  .menu-item.filtro-plataforma {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    grid-column: auto;
+  }
+
+  .separador-plataformas {
+    display: inline !important;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
 
   .produtos-grid {

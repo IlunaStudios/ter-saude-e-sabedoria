@@ -1,43 +1,68 @@
-// ============================================
+﻿// ============================================
 // JAVASCRIPT - FUNCIONALIDADES DO SITE
 // Arquivo separado para organização
 // ============================================
 
-// Substitua YOUR_SHEET_ID pelo ID da planilha que você publicar no Google Sheets.
-// O site carrega dados de múltiplas abas de plataforma (Amazon, Mercado Livre, etc)
-const SHEET_ID = "1_q-q_pin_Uj2RSEa2FIKCvsuKoF80WLcMHtoyKn4qVA";
+// Substitua pelo ID da planilha que você publicar no Google Sheets.
+// O site carrega dados da aba VitrineSite (gid=2082836737)
+const SHEET_ID = "1xpEKCC0mys0FEZqeAue0f_Q6ObMStz1S";
 
-// Plataformas com seus IDs (gid) para evitar problemas com emojis
+// Configuração de publicação da aba VitrineSite
 const PLATFORMS = {
-  amazon: { name: "Amazon", gid: 5 },
-  mercadolivre: { name: "Merc.Livre", gid: 6 },
-  shopee: { name: "Shopee", gid: 7 },
-  aliexpress: { name: "AliExpress", gid: 8 },
-  hotmart: { name: "Hotmart", gid: 9 },
-  eduzz: { name: "Eduzz", gid: 10 },
-  kiwify: { name: "Kiwify", gid: 11 },
-  monetizze: { name: "Monetizze", gid: 12 },
-  kdp: { name: "KDP", gid: 13 },
-  google: { name: "Google Play", gid: 14 },
-  kobo: { name: "Kobo", gid: 15 },
+  vitrine: { name: "VitrineSite", gid: 2082836737 },
 };
 
 function buildSheetUrl(platformKey) {
   const plat = PLATFORMS[platformKey];
   if (!plat) return null;
-  // Tentar método de publicação como página web
   return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/pub?output=csv&gid=${plat.gid}`;
+}
+
+function buildAlternateSheetUrl(platformKey) {
+  const plat = PLATFORMS[platformKey];
+  if (!plat) return null;
+  return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${plat.gid}`;
 }
 
 const PRODUCT_GRID = document.getElementById("grade-principal");
 const PRODUCT_LOADING = document.getElementById("produtos-carregando");
 const CATEGORY_MENU = document.getElementById("categoria-menu");
+const DEBUG_PANEL = document.getElementById("debug-panel");
+const DEBUG_CONTENT = document.getElementById("debug-content");
+
+// Sistema de debug para diagnosticar problemas em celular
+function debugLog(message) {
+  const timestamp = new Date().toLocaleTimeString();
+  const logEntry = `[${timestamp}] ${message}`;
+  console.log(logEntry);
+
+  if (DEBUG_CONTENT) {
+    const line = document.createElement("div");
+    line.textContent = message;
+    line.style.color = message.includes("❌")
+      ? "#f00"
+      : message.includes("✅")
+        ? "#0f0"
+        : "#0f0";
+    DEBUG_CONTENT.appendChild(line);
+    DEBUG_CONTENT.scrollTop = DEBUG_CONTENT.scrollHeight;
+  }
+}
+
+// Mostrar painel de debug com triplo-clique
+document.addEventListener("click", (e) => {
+  if (e.detail === 3 && DEBUG_PANEL) {
+    DEBUG_PANEL.style.display =
+      DEBUG_PANEL.style.display === "block" ? "none" : "block";
+  }
+});
 
 // Estado dos filtros atuais
 let currentCategoryFilter = "todos";
 let currentPlatformFilter = "todos";
 let currentDigitalFilter = "todos";
 
+// Lista de nomes padrão para as categorias que aparecem no menu.
 const CATEGORY_LABELS = {
   todos: "🏪 Todos",
   saude: "💊 Saúde",
@@ -49,7 +74,10 @@ const CATEGORY_LABELS = {
   outros: "🧩 Outros",
 };
 
+// Informações de cada plataforma. Usado para mostrar o nome certo no card.
+// Agora só VitrineSite
 const PLATFORM_INFO = {
+  vitrine: { label: "Compra via Afiliado", className: "vitrine" },
   amazon: { label: "Compra via Amazon", className: "amazon" },
   shopee: { label: "Compra via Shopee", className: "shopee" },
   mercadolivre: {
@@ -70,113 +98,105 @@ window.addEventListener("DOMContentLoaded", () => {
   loadProductsFromSheet();
 });
 
+function showLoading(message = "Carregando produtos da planilha...") {
+  if (!PRODUCT_LOADING) return;
+  PRODUCT_LOADING.textContent = message;
+  PRODUCT_LOADING.style.display = "block";
+}
+
+function hideLoading() {
+  if (!PRODUCT_LOADING) return;
+  PRODUCT_LOADING.style.display = "none";
+}
+
 async function loadProductsFromSheet() {
-  console.log("Iniciando carregamento de produtos...");
+  debugLog("🚀 Iniciando carregamento de produtos...");
+  showLoading();
   try {
     const products = await fetchSheetData();
-    console.log("Produtos carregados:", products);
     const items = products.length ? products : fallbackProducts();
-    console.log("Itens finais para renderizar:", items);
+    debugLog(`✅ Produtos carregados: ${items.length}`);
     renderProducts(items);
     renderCategoryMenu(items);
   } catch (error) {
-    console.warn("Não foi possível carregar a planilha:", error);
+    debugLog(`❌ Erro ao carregar: ${error.message}`);
+    showLoading("Erro ao carregar a planilha. Usando produtos padrão.");
     const items = fallbackProducts();
+    debugLog(`📋 Usando produtos padrão: ${items.length}`);
     renderProducts(items);
     renderCategoryMenu(items);
+  } finally {
+    hideLoading();
   }
 }
 
 async function fetchSheetData() {
   if (window.location.protocol === "file:") {
-    throw new Error(
-      "Use um servidor HTTP para carregar a planilha ou exporte para um arquivo JSON/CSV disponível via URL.",
-    );
+    const error = "Protocolo file:// não permitido. Use um servidor HTTP.";
+    debugLog(`❌ ${error}`);
+    throw new Error(error);
   }
 
+  debugLog(
+    `📡 Conectando a Google Sheets... ID: ${SHEET_ID.substring(0, 10)}...`,
+  );
   const allProducts = [];
 
-  // Carrega de cada plataforma
-  for (const platformKey of Object.keys(PLATFORMS)) {
-    try {
-      const url = buildSheetUrl(platformKey);
-      if (!url) continue;
+  // Carregar apenas da aba VitrineSite
+  const platformKey = "vitrine";
+  try {
+    let url = buildSheetUrl(platformKey);
+    if (!url) throw new Error("URL da planilha não pôde ser construída");
 
-      const response = await fetch(url);
-      if (!response.ok) continue;
-
-      const text = await response.text();
-      const platformProducts = parseSheetCsv(text, platformKey);
-      allProducts.push(...platformProducts);
-    } catch (err) {
-      console.log(`Aviso: não conseguiu carregar ${platformKey}`);
+    debugLog(`📊 Tentando pub CSV (gid=${PLATFORMS[platformKey].gid})...`);
+    let response = await fetch(url);
+    if (!response.ok) {
+      debugLog(`⚠️ pub CSV falhou (${response.status}). Tentando gviz...`);
+      url = buildAlternateSheetUrl(platformKey);
+      response = await fetch(url);
     }
+
+    if (!response.ok) {
+      throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const text = await response.text();
+    debugLog(`📥 CSV recebido: ${text.length} bytes`);
+    const platformProducts = parseSheetCsv(text, platformKey);
+    allProducts.push(...platformProducts);
+    debugLog(`✅ Produtos da ${platformKey}: ${platformProducts.length}`);
+  } catch (err) {
+    debugLog(`❌ Erro vitrine: ${err.message}`);
+    throw err; // Re-throw para usar fallback
   }
 
-  // Se não conseguiu carregar nenhum produto, retorna produtos de exemplo
   if (allProducts.length === 0) {
-    console.log("Nenhum produto carregado da planilha, usando exemplos");
-    const examples = getExampleProducts();
-    console.log("Produtos de exemplo:", examples);
-    return examples;
+    debugLog("⚠️ Nenhum produto na planilha, usando padrão");
+    return fallbackProducts();
   }
 
   return allProducts;
 }
 
-function getExampleProducts() {
-  return [
-    {
-      id: "AMZ-0001",
-      name: "Semente de Chia Natural Embalagem Premium Zip Lock - da VIDA (1Kg)",
-      category: "saude",
-      categoryLabel: "Saúde",
-      price: "",
-      priceOld: "",
-      bestPlatform: "amazon",
-      link: "https://amzn.to/3OJvixx",
-      platformLabel: "Compra via Amazon",
-      status: "ativo",
-      badge: "",
-      image:
-        "https://via.placeholder.com/250x250/2d5f4c/ffffff?text=Semente+de+Chia",
-      soldText: "",
-      shippingTag: "✅ Frete Grátis",
-    },
-    {
-      id: "ML-0001",
-      name: "Integralmedica Creatina Carbo Fuel 300G – Energia e Força",
-      category: "saude",
-      categoryLabel: "Saúde",
-      price: "",
-      priceOld: "",
-      bestPlatform: "mercadolivre",
-      link: "https://meli.la/2KUDXm9",
-      platformLabel: "Compra via Mercado Livre",
-      status: "ativo",
-      badge: "",
-      image:
-        "https://via.placeholder.com/250x250/2d5f4c/ffffff?text=Creatina+Carbo+Fuel",
-      soldText: "",
-      shippingTag: "✅ Frete Grátis",
-    },
-  ];
-}
-
 function parseSheetCsv(csvText, platformKey) {
+  const delimiter = detectCsvDelimiter(csvText);
+  debugLog(`🧾 Delimitador CSV detectado: ${delimiter}`);
   const rows = csvText
     .trim()
     .split(/\r?\n/)
-    .map((line) => parseCsvLine(line));
+    .map((line) => parseCsvLine(line, delimiter));
 
-  rows.forEach((row, rowIndex) => {
+  let headerRowFound = false;
+  let headers = [];
+  const products = [];
+
+  rows.forEach((row) => {
     const normalizedText = row.map((cell) =>
       String(cell || "")
         .trim()
         .toLowerCase(),
     );
 
-    // Procura por headers: pode ser "produto base id" ou "produto"
     const hasProductCol = normalizedText.some(
       (cell) => cell.includes("produto") || cell.includes("id"),
     );
@@ -195,7 +215,6 @@ function parseSheetCsv(csvText, platformKey) {
       return;
     }
 
-    // Pula linhas vazias
     if (!row.some((cell) => String(cell || "").trim())) {
       return;
     }
@@ -216,15 +235,46 @@ function parseSheetCsv(csvText, platformKey) {
   return dedupeProducts(products);
 }
 
+function detectCsvDelimiter(csvText) {
+  const sample = csvText.trim().split(/\r?\n/).slice(0, 5).join("\n");
+  const commaCount = (sample.match(/,/g) || []).length;
+  const semicolonCount = (sample.match(/;/g) || []).length;
+  return semicolonCount > commaCount ? ";" : ",";
+}
+
+function parseCsvLine(line, delimiter = ",") {
+  const values = [];
+  let current = "";
+  let quoted = false;
+
+  for (let i = 0; i < line.length; i += 1) {
+    const char = line[i];
+    if (char === '"') {
+      if (quoted && line[i + 1] === '"') {
+        current += '"';
+        i += 1;
+      } else {
+        quoted = !quoted;
+      }
+    } else if (char === delimiter && !quoted) {
+      values.push(current);
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+
+  values.push(current);
+  return values;
+}
+
 function dedupeProducts(products) {
   const deduped = new Map();
   products.forEach((product) => {
     const key = String(product.id || product.name || product.link || "")
       .trim()
       .toLowerCase();
-    if (!key) {
-      return;
-    }
+    if (!key) return;
 
     const existing = deduped.get(key);
     if (!existing) {
@@ -240,8 +290,6 @@ function dedupeProducts(products) {
     if (existing.status === "ativo" && product.status !== "ativo") {
       return;
     }
-
-    // keep the first candidate when both have same status
   });
   return Array.from(deduped.values());
 }
@@ -250,6 +298,7 @@ function parseCsvLine(line) {
   const values = [];
   let current = "";
   let quoted = false;
+
   for (let i = 0; i < line.length; i += 1) {
     const char = line[i];
     if (char === '"') {
@@ -266,6 +315,7 @@ function parseCsvLine(line) {
       current += char;
     }
   }
+
   values.push(current);
   return values;
 }
@@ -342,13 +392,12 @@ function normalizeProductRow(row, platformKey) {
     }
   }
 
-  // Se não tem plataforma mas tem link, usa o platformKey passado (ex: amazon, mercadolivre)
   if (!platform && link && platformKey) {
     platform = platformKey;
   }
 
   if (!platform && link) {
-    platform = "outros";
+    platform = "vitrine"; // Padrão para produtos da vitrine
   }
 
   if (!link) {
@@ -364,14 +413,21 @@ function normalizeProductRow(row, platformKey) {
     category,
     categoryLabel: String(rawCategory).trim() || getCategoryLabel(category),
     price: get("preço", "preço menor r$", "preço menor"),
-    priceOld: get("preço antigo"),
+    priceOld: get(
+      "preço original",
+      "preco antigo",
+      "preço antigo",
+      "preco_antigo",
+    ),
     bestPlatform: platform,
     link,
-    platformLabel: PLATFORM_INFO[platform]?.label || "Compra agora",
+    platformLabel:
+      PLATFORM_INFO[platform]?.label || get("plataforma") || "Compra agora",
     status,
-    badge: badgeFromStatus(get("status no site", "status")),
-    image: row["Imagem"] || placeholderImage(rawName || "Produto"),
-    soldText: get("texto vendido"),
+    badge: badgeFromStatus(status),
+    image:
+      get("imagem", "image", "foto") || placeholderImage(rawName || "Produto"),
+    soldText: get("texto vendido", "vendido", "vendidos"),
     shippingTag: get("frete") || "✅ Frete Grátis",
   };
 }
@@ -383,7 +439,7 @@ function normalizeCategory(value) {
     .trim()
     .toLowerCase();
   if (!raw) return "outros";
-  if (raw.includes("saude") || raw.includes("saúde")) return "saude";
+  if (raw.includes("saude") || raw.includes("saude")) return "saude";
   if (raw.includes("beleza")) return "beleza";
   if (raw.includes("fitness")) return "fitness";
   if (raw.includes("casa")) return "casa";
@@ -400,7 +456,8 @@ function badgeFromStatus(value) {
   if (
     status.includes("promo") ||
     status.includes("-%") ||
-    status.includes("-")
+    status.includes("-") ||
+    status.includes("desconto")
   ) {
     return "-25%";
   }
@@ -415,64 +472,83 @@ function placeholderImage(text) {
 }
 
 function renderProducts(products) {
-  console.log("Renderizando produtos:", products.length, "produtos");
   PRODUCT_GRID.innerHTML = "";
-  if (!products.length) {
-    PRODUCT_GRID.innerHTML = `<p style=\"grid-column:1/-1;padding:24px 16px;text-align:center;color:var(--verde-medio);font-weight:700;\">Nenhum produto disponível na planilha.</p>`;
+  // Esconder o elemento de carregamento
+  if (PRODUCT_LOADING) {
+    PRODUCT_LOADING.style.display = "none";
+  }
+
+  if (!products || products.length === 0) {
+    PRODUCT_GRID.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: #999; padding: 40px;">Nenhum produto carregado. Verifique sua planilha Google Sheets.</p>`;
     return;
   }
 
-  products.forEach((product) => {
+  console.log(`🎨 Renderizando ${products.length} produtos...`);
+  products.forEach((product, index) => {
     PRODUCT_GRID.insertAdjacentHTML(
       "beforeend",
       createProductCardHtml(product),
     );
   });
-  console.log("Produtos renderizados com sucesso");
+  console.log(`✅ ${products.length} produtos renderizados com sucesso!`);
 }
 
 function renderCategoryMenu(products) {
   if (!CATEGORY_MENU) return;
 
-  CATEGORY_MENU.querySelectorAll(".menu-item[data-cat]").forEach((button) => {
+  // Remove apenas botões de CATEGORIA (data-cat) que não sejam "todos"
+  // NÃO remove botões de plataforma (.filtro-plataforma)
+  CATEGORY_MENU.querySelectorAll(
+    ".menu-item[data-cat]:not([data-plat])",
+  ).forEach((button) => {
     if (button.dataset.cat !== "todos") {
       button.remove();
     }
   });
 
+  // Coletar todas as categorias encontradas nos produtos
   const categories = new Map();
   products.forEach((product) => {
-    if (!product.category) return;
+    if (!product.category) {
+      console.warn("⚠️ Produto sem categoria:", product.name);
+      return;
+    }
     if (!categories.has(product.category)) {
-      categories.set(
-        product.category,
-        product.categoryLabel || getCategoryLabel(product.category),
-      );
+      const label =
+        CATEGORY_LABELS[product.category] ||
+        product.categoryLabel ||
+        getCategoryLabel(product.category);
+      categories.set(product.category, label);
     }
   });
 
+  console.log(
+    "📂 Categorias encontradas:",
+    Array.from(categories.entries()).map(([k, v]) => `${k}=${v}`),
+  );
+  console.log("📊 Total de categorias: ", categories.size);
+  console.log("📊 Total de produtos: ", products.length);
+
+  // Gerar HTML dos botões de categoria
   const buttonsHtml = Array.from(categories.entries())
     .sort(([a], [b]) => a.localeCompare(b, "pt-BR"))
     .map(
-      ([key, label]) => `
-    <button
-      type="button"
-      class="menu-item"
-      data-cat="${escapeHtml(key)}"
-      onclick="filtrarProdutos('${escapeHtml(key)}')"
-    >
-      ${escapeHtml(label)}
-    </button>`,
+      ([key, label]) =>
+        `<button type="button" class="menu-item" data-cat="${escapeHtml(key)}" onclick="filtrarProdutos('${escapeHtml(key)}')">\n      ${escapeHtml(label)}\n    </button>`,
     )
-    .join("");
+    .join("\n    ");
 
-  const separator = CATEGORY_MENU.querySelector(".separador-plataformas");
-  if (separator) {
-    separator.insertAdjacentHTML("beforebegin", buttonsHtml);
+  // Inserir os botões de categoria APÓS o botão "Todos"
+  const todosButton = CATEGORY_MENU.querySelector('[data-cat="todos"]');
+  if (todosButton && buttonsHtml) {
+    console.log("✅ Inserindo categorias após o botão Todos");
+    todosButton.insertAdjacentHTML("afterend", buttonsHtml);
   } else {
+    console.warn("⚠️ Botão Todos não encontrado, inserindo no final");
     CATEGORY_MENU.insertAdjacentHTML("beforeend", buttonsHtml);
   }
 
+  // Aplicar filtro inicial
   filtrarProdutos("todos");
 }
 
@@ -487,22 +563,22 @@ function getCategoryLabel(category) {
 
 function createProductCardHtml(product) {
   const badgeHtml = product.badge
-    ? `<span class=\"${product.badge === "NOVO!" ? "tag-novo" : "tag-off"}\">${product.badge}</span>`
+    ? `<span class="${product.badge === "NOVO!" ? "tag-novo" : "tag-off"}">${escapeHtml(product.badge)}</span>`
     : "";
   const priceOldHtml = product.priceOld
-    ? `<span class=\"preco-antigo\">${product.priceOld}</span>`
+    ? `<span class="preco-antigo">${escapeHtml(product.priceOld)}</span>`
     : "";
   const parcelInfo = product.price
-    ? `<span class=\"parcelamento\">Parcelas sob consulta</span>`
+    ? `<span class="parcelamento">Parcelas sob consulta</span>`
     : "";
 
   return `
-   <div class="card-produto" data-cat="${product.category}" data-plat="${product.bestPlatform}">
+   <div class="card-produto" data-cat="${escapeHtml(product.category)}" data-plat="${escapeHtml(product.bestPlatform)}">
      ${badgeHtml}
      <button class="card-fav" onclick="toggleFav(this)">🤍</button>
 
      <div class="card-img-area">
-       <img src="${product.image}" alt="${escapeHtml(product.name)}" />
+       <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" />
      </div>
 
      <div class="barra-vendido-area">
@@ -523,7 +599,7 @@ function createProductCardHtml(product) {
 
        <div class="preco-container">
          ${priceOldHtml}
-         <span class="preco-atual">${product.price || "Consulte"}</span>
+         <span class="preco-atual">${escapeHtml(product.price || "Consulte")}</span>
        </div>
        ${parcelInfo}
        <span class="frete-tag">${escapeHtml(product.shippingTag || "✅ Frete Grátis")}</span>
@@ -538,14 +614,14 @@ function createProductCardHtml(product) {
 
 function escapeHtml(text) {
   return String(text || "").replace(
-    /[&<>'"]/g,
+    /[&<>"']/g,
     (char) =>
       ({
         "&": "&amp;",
         "<": "&lt;",
         ">": "&gt;",
-        "'": "&#39;",
         '"': "&quot;",
+        "'": "&#39;",
       })[char],
   );
 }
@@ -640,8 +716,8 @@ function fallbackProducts() {
   ];
 }
 
-// Função que aplica ambos os filtros simultaneamente
 function applyFilters() {
+  let visibleCount = 0;
   document.querySelectorAll(".card-produto").forEach((card) => {
     const matchesCategory =
       currentCategoryFilter === "todos" ||
@@ -652,68 +728,56 @@ function applyFilters() {
 
     if (matchesCategory && matchesPlatform) {
       card.style.display = "block";
+      visibleCount++;
     } else {
       card.style.display = "none";
     }
   });
+  console.log(
+    `🔍 Filtros aplicados: categoria=${currentCategoryFilter}, plataforma=${currentPlatformFilter}. Visíveis: ${visibleCount}`,
+  );
 }
 
-// Função que aplica o filtro digital
 function applyDigitalFilters() {
   document.querySelectorAll(".card-digital").forEach((card) => {
-    if (
+    card.style.display =
       currentDigitalFilter === "todos" ||
       card.dataset.plat === currentDigitalFilter
-    ) {
-      card.style.display = "block";
-    } else {
-      card.style.display = "none";
-    }
+        ? "block"
+        : "none";
   });
 }
 
 function filtrarProdutos(categoria) {
-  // Atualiza o filtro de categoria
   currentCategoryFilter = categoria;
+  console.log(`📂 Filtrando por categoria: ${categoria}`);
 
-  // Só afeta botões de categoria (não plataforma)
-  document.querySelectorAll(".menu-item[data-cat]").forEach((b) => {
-    b.classList.toggle("ativo", b.dataset.cat === categoria);
-  });
+  // Atualizar visual dos botões de categoria
+  document
+    .querySelectorAll(".menu-item[data-cat]:not([data-plat])")
+    .forEach((b) => {
+      b.classList.toggle("ativo", b.dataset.cat === categoria);
+    });
 
-  // Aplica ambos os filtros
   applyFilters();
 }
 
 function filtrarPorPlataforma(plataforma) {
-  // Atualiza o filtro de plataforma
   currentPlatformFilter = plataforma;
+  console.log(`🛒 Filtrando por plataforma: ${plataforma}`);
 
-  // Primeiro, remove a classe ativo de todos os filtros de plataforma
   document.querySelectorAll(".filtro-plataforma").forEach((b) => {
-    b.classList.remove("ativo");
+    b.classList.toggle("ativo", b.dataset.plat === plataforma);
   });
 
-  // Depois, adiciona ativo apenas no filtro clicado
-  document.querySelectorAll(".filtro-plataforma").forEach((b) => {
-    if (b.dataset.plat === plataforma) {
-      b.classList.add("ativo");
-    }
-  });
-
-  // Aplica ambos os filtros
   applyFilters();
 }
 
 function filtrarDigital(plataforma) {
-  // Atualiza o filtro digital
   currentDigitalFilter = plataforma;
-
   document.querySelectorAll(".plat-btn").forEach((b) => {
     b.classList.toggle("ativo", b.dataset.plat === plataforma);
   });
-
-  // Aplica o filtro digital
   applyDigitalFilters();
 }
 
