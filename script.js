@@ -49,6 +49,23 @@ function debugLog(message) {
   }
 }
 
+// Verificar se os botões de plataforma existem na inicialização
+function checkPlatformButtons() {
+  const platformButtons = document.querySelectorAll(".filtro-plataforma");
+  debugLog(`🔍 Botões de plataforma encontrados: ${platformButtons.length}`);
+
+  platformButtons.forEach((btn, index) => {
+    const style = window.getComputedStyle(btn);
+    const isVisible =
+      style.display !== "none" &&
+      style.visibility !== "hidden" &&
+      style.opacity !== "0";
+    debugLog(
+      `  ${index + 1}. ${btn.dataset.plat}: display=${style.display}, visibility=${style.visibility}, opacity=${style.opacity}, visible=${isVisible}`,
+    );
+  });
+}
+
 // Mostrar painel de debug com triplo-clique
 document.addEventListener("click", (e) => {
   if (e.detail === 3 && DEBUG_PANEL) {
@@ -94,6 +111,35 @@ const PLATFORM_INFO = {
   monetizze: { label: "Compra via Monetizze", className: "monetizze" },
 };
 
+// Função para testar conectividade da planilha
+async function testSheetConnectivity() {
+  debugLog("🧪 Testando conectividade da planilha...");
+  
+  const testUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/pub?output=csv&gid=${PLATFORMS.vitrine.gid}`;
+  debugLog(`🔗 URL de teste: ${testUrl}`);
+  
+  try {
+    const response = await fetch(testUrl);
+    debugLog(`📊 Status da resposta: ${response.status} ${response.statusText}`);
+    
+    if (response.ok) {
+      const text = await response.text();
+      debugLog(`✅ Planilha acessível! ${text.length} bytes recebidos`);
+      if (text.length > 0) {
+        const firstLine = text.split('\n')[0];
+        debugLog(`📄 Primeira linha: "${firstLine.substring(0, 100)}..."`);
+      }
+    } else {
+      debugLog(`❌ Planilha não acessível: ${response.status}`);
+      if (response.status === 404) {
+        debugLog(`💡 Possíveis causas: planilha não publicada, ID incorreto, aba não existe`);
+      }
+    }
+  } catch (error) {
+    debugLog(`❌ Erro de conectividade: ${error.message}`);
+  }
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   loadProductsFromSheet();
 });
@@ -111,10 +157,10 @@ function hideLoading() {
 
 async function loadProductsFromSheet() {
   debugLog("🚀 Iniciando carregamento de produtos...");
-  
-  // Testar conectividade da planilha primeiro
-  await testSheetConnectivity();
-  
+
+  // Verificar se os botões de plataforma estão presentes
+  checkPlatformButtons();
+
   showLoading();
   try {
     const products = await fetchSheetData();
@@ -153,25 +199,29 @@ async function fetchSheetData() {
     debugLog(`🔗 URL tentativa 1: ${url}`);
     let response = await fetch(url);
     if (!response.ok) {
-      debugLog(`⚠️ pub CSV falhou (${response.status}: ${response.statusText}). Tentando gviz...`);
+      debugLog(
+        `⚠️ pub CSV falhou (${response.status}: ${response.statusText}). Tentando gviz...`,
+      );
       url = buildAlternateSheetUrl(platformKey);
       debugLog(`🔗 URL tentativa 2: ${url}`);
       response = await fetch(url);
     }
 
     if (!response.ok) {
-      debugLog(`❌ Ambas URLs falharam. Status: ${response.status} ${response.statusText}`);
+      debugLog(
+        `❌ Ambas URLs falharam. Status: ${response.status} ${response.statusText}`,
+      );
       throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`);
     }
 
     const text = await response.text();
     debugLog(`📥 CSV recebido: ${text.length} bytes`);
-    
+
     if (text.length < 10) {
       debugLog(`⚠️ CSV muito pequeno, pode estar vazio ou com erro`);
       debugLog(`📄 Conteúdo: "${text.substring(0, 100)}..."`);
     }
-    
+
     const platformProducts = parseSheetCsv(text, platformKey);
     allProducts.push(...platformProducts);
     debugLog(`✅ Produtos da ${platformKey}: ${platformProducts.length}`);
