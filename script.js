@@ -111,6 +111,10 @@ function hideLoading() {
 
 async function loadProductsFromSheet() {
   debugLog("🚀 Iniciando carregamento de produtos...");
+  
+  // Testar conectividade da planilha primeiro
+  await testSheetConnectivity();
+  
   showLoading();
   try {
     const products = await fetchSheetData();
@@ -146,22 +150,28 @@ async function fetchSheetData() {
   const platformKey = "vitrine";
   try {
     let url = buildSheetUrl(platformKey);
-    if (!url) throw new Error("URL da planilha não pôde ser construída");
-
-    debugLog(`📊 Tentando pub CSV (gid=${PLATFORMS[platformKey].gid})...`);
+    debugLog(`🔗 URL tentativa 1: ${url}`);
     let response = await fetch(url);
     if (!response.ok) {
-      debugLog(`⚠️ pub CSV falhou (${response.status}). Tentando gviz...`);
+      debugLog(`⚠️ pub CSV falhou (${response.status}: ${response.statusText}). Tentando gviz...`);
       url = buildAlternateSheetUrl(platformKey);
+      debugLog(`🔗 URL tentativa 2: ${url}`);
       response = await fetch(url);
     }
 
     if (!response.ok) {
+      debugLog(`❌ Ambas URLs falharam. Status: ${response.status} ${response.statusText}`);
       throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`);
     }
 
     const text = await response.text();
     debugLog(`📥 CSV recebido: ${text.length} bytes`);
+    
+    if (text.length < 10) {
+      debugLog(`⚠️ CSV muito pequeno, pode estar vazio ou com erro`);
+      debugLog(`📄 Conteúdo: "${text.substring(0, 100)}..."`);
+    }
+    
     const platformProducts = parseSheetCsv(text, platformKey);
     allProducts.push(...platformProducts);
     debugLog(`✅ Produtos da ${platformKey}: ${platformProducts.length}`);
