@@ -120,10 +120,8 @@ async function testSheetConnectivity() {
 
   try {
     const response = await fetch(testUrl);
-    debugLog(
-      `📊 Status da resposta: ${response.status} ${response.statusText}`,
-    );
-
+    debugLog(`📊 Status da resposta: ${response.status} ${response.statusText}`);
+    
     if (response.ok) {
       const text = await response.text();
       debugLog(`✅ Planilha acessível! ${text.length} bytes recebidos`);
@@ -135,21 +133,14 @@ async function testSheetConnectivity() {
       debugLog(`❌ Planilha não acessível: ${response.status}`);
       if (response.status === 401) {
         debugLog(`🚫 PLANILHA NÃO PUBLICADA! Você precisa:`);
-        debugLog(`   1. Abrir a planilha no Google Sheets`);
-        debugLog(`   2. Ir em Arquivo > Compartilhar > Publicar na web`);
-        debugLog(`   3. Selecionar a aba "VitrineSite"`);
-        debugLog(`   4. Escolher formato CSV`);
+        debugLog(`   1. Abrir: https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?gid=${PLATFORMS.vitrine.gid}`);
+        debugLog(`   2. Arquivo > Compartilhar > Publicar na web`);
+        debugLog(`   3. Aba: "VitrineSite"`);
+        debugLog(`   4. Formato: "Vírgula Separada (.csv)"`);
         debugLog(`   5. Clicar em "Publicar"`);
+        debugLog(`   6. Recarregar a página do site`);
       } else if (response.status === 404) {
         debugLog(`💡 Possíveis causas: planilha não publicada, ID incorreto, aba não existe`);
-      }
-    }
-  } catch (error) {
-    debugLog(`❌ Erro de conectividade: ${error.message}`);
-  }
-}
-
-window.addEventListener("DOMContentLoaded", () => {
   loadProductsFromSheet();
 });
 
